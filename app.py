@@ -46,8 +46,29 @@ def listar_ordens():
     return jsonify([dict(o) for o in ordens])
     
 #PONTO DE PARTIDA
-
 if __name__=='__main__':
     init_bd()
     
     app.run(debug=True, host='0.0.0.0', port=5000)
+    
+#ROTA POR ID - BUSCAR UMA ORDEM ESPECÍFICA PELO ID
+@app.router('/ordens/<int:ordem_id>', methods=['GET'])
+
+def buscar_ordem(ordem_id):
+    '''
+    Buscar uma única ordem de produção pelo ID.
+    
+    Parâmetros de URL:
+        - ordem id(int) ID da ordem a ser buscada.
+        
+    Retorna: 
+        200 + JSON da ordem, se for encontrada.
+        404 + mensagem de erro, se não existir.
+    '''
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    #O '?' é substituído pelo valor de ordem_id de forma segura
+    cursor.execute('SELECT * FROM ordens WHERE id = ?', (ordem_id))
+    ordem = cursor.fetchone() #Retorna um único registro ou None
+    conn.close()
