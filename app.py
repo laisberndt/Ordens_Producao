@@ -138,6 +138,22 @@ def criar_ordem():
 
     return jsonify(dict(nova_ordem)), 201 #201 retorna "created" com o registro completo
 
+#ROTA - ATUALIZAR STATUS DE UMA ORDEM (PUT)
+@app.route('/ordens/<int:ordem_id>', methods=['PUT'])
+def atualizar_ordem():
+    '''
+    Atualiza o status de uma ordem de produção existente.
+    Parâmetros de URL:
+        ordem_id (int): ID da ordem a atualizar.
+        Body esperado (JSON):
+            status (str): Novo status. Valores aceitos: 'Pendente', 'Em andamento', 'Concluida'.
+    Retorna:
+        200 + JSON da ordem atualizada.
+        400 + erro se status invalido.
+        404 + erro se ordem nao encontrada.
+    '''
+## ----------------------------------- PAREI AQUI -------------------------------------------
+
 #PONTO DE PARTIDA
 if __name__=='__main__':
     init_bd()
