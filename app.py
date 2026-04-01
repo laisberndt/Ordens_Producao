@@ -117,7 +117,7 @@ def criar_ordem():
     
     #Inserção dos dados no banco
     conn = get_connection()
-    cursor = conn.cursor
+    cursor = conn.cursor()
     #Com o cursor.execute sempre vem o comando SQL
     cursor.execute(
         'INSERT INTO ordens (produto, quantidade, status) VALUES (?, ?, ?)',
