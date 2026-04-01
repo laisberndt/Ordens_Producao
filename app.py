@@ -72,7 +72,7 @@ def buscar_ordem(ordem_id):
     return jsonify(dict(ordem)), 200 #Código de sucesso
 
 #ROTA - CRIAR NOVA ORDEM DE PRODUÇÃO (POST)
-@app.route('ordens', methods=['POST'])
+@app.route('/ordens', methods=['POST'])
 def criar_ordem():
     '''
     Cria uma nova ordem de produção a partir dos dados JSON enviados.
@@ -115,6 +115,29 @@ def criar_ordem():
     if status not in status_validos:
         return jsonify({'erro': f'Status invalido. Use {status_validos}'}), 400
     
+    #Inserção dos dados no banco
+    conn = get_connection()
+    cursor = conn.cursor
+    #Com o cursor.execute sempre vem o comando SQL
+    cursor.execute(
+        'INSERT INTO ordens (produto, quantidade, status) VALUES (?, ?, ?)',
+        (produto, quantidade, status)
+    )
+    conn.commit()
+
+    #Recuperando o ID que é gerado automaticamente pelo banco
+    novo_id = cursor.lastrowid
+    conn.close()
+
+    #Buscar o registro que foi recém-criado
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM ordens WHERE id = ?', (novo_id,))
+    nova_ordem = cursor.fetchone() #Lê o máximo de resultados possíveis
+    conn.close()
+
+    return jsonify(dict(nova_ordem)), 201 #201 retorna "created" com o registro completo
+
 #PONTO DE PARTIDA
 if __name__=='__main__':
     init_bd()
