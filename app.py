@@ -1,22 +1,22 @@
-#BACK-END FLASK: ROTAS DA API REST
+# BACK-END FLASK: ROTAS DA API REST
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from database import init_bd, get_connection
 
-#Criando uma instância da aplicação Flash
+# Criando uma instância da aplicação Flash
 app = Flask(__name__, static_folder='static', static_url_path='')
 
-#Habilitando os CORS
+# Habilitando os CORS
 CORS(app)
 
-#ROTA N1 - PÁGINA INICIAL
-@app.route('/') #A "/" identifica que é um caminho
+# ROTA N1 - PÁGINA INICIAL
+@app.route('/') # A "/" identifica que é um caminho
 def index():
-    #Alimenta o arquivo index.html da pasta static
+    # Alimenta o arquivo index.html da pasta static
     return app.send_static_file('index.html')
 
-#ROTA N2 - STATUS API
+# ROTA N2 - STATUS API
 @app.route('/status')
 def status():
     '''Rota de verificação da API (Saúde)
@@ -28,7 +28,7 @@ def status():
         "mensagem": "Ola Fabrica! API funcionando!"
     })
 
-#ROTA N3 - LISTAR TODAS AS ORDENS (GET)
+# ROTA N3 - LISTAR TODAS AS ORDENS (GET)
 @app.route('/ordens', methods=['GET'])
 def listar_ordens():
     '''
@@ -40,12 +40,12 @@ def listar_ordens():
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM ordens ORDER BY id DESC')
-    ordens = cursor.fetchall() #Pega todos os resultados
+    ordens = cursor.fetchall() # Pega todos os resultados
     conn.close()
-    #Converte cada Row do SQLite em dicionário Python para serializar em JSON
+    # Converte cada Row do SQLite em dicionário Python para serializar em JSON
     return jsonify([dict(o) for o in ordens])
 
-#ROTA POR ID - BUSCAR UMA ORDEM ESPECÍFICA PELO ID
+# ROTA POR ID - BUSCAR UMA ORDEM ESPECÍFICA PELO ID
 @app.route('/ordens/<int:ordem_id>', methods=['GET'])
 
 def buscar_ordem(ordem_id):
@@ -62,16 +62,16 @@ def buscar_ordem(ordem_id):
     conn = get_connection()
     cursor = conn.cursor()
     
-    #O '?' é substituído pelo valor de ordem_id de forma segura
+    # O '?' é substituído pelo valor de ordem_id de forma segura
     cursor.execute('SELECT * FROM ordens WHERE id = ?', (ordem_id,))
-    ordem = cursor.fetchone() #Retorna um único registro ou None
+    ordem = cursor.fetchone() # Retorna um único registro ou None
     conn.close()
     
     if ordem is None:
-        return jsonify({'erro': f'Ordem {ordem_id} nao encontrada!'}), 404 #Código de erro
-    return jsonify(dict(ordem)), 200 #Código de sucesso
+        return jsonify({'erro': f'Ordem {ordem_id} nao encontrada!'}), 404 # Código de erro
+    return jsonify(dict(ordem)), 200 # Código de sucesso
 
-#ROTA N4 - CRIAR NOVA ORDEM DE PRODUÇÃO (POST)
+# ROTA N4 - CRIAR NOVA ORDEM DE PRODUÇÃO (POST)
 @app.route('/ordens', methods=['POST'])
 def criar_ordem():
     '''
@@ -89,19 +89,18 @@ def criar_ordem():
     dados = request.get_json()
     
     if not dados:
-        return jsonify({'erro:': 'Body da requesicao ausente ou invalido.'}), 400
-        #400 é para dados inválidos
+        return jsonify({'erro:': 'Body da requesicao ausente ou invalido.'}), 400 # Para dados inválidos
     
-    #Verificação de campo obrigatório (produto)
-    produto = dados.get('produto', '').strip() #Remove espaços no começo e no fim da string
+    # Verificação de campo obrigatório (produto)
+    produto = dados.get('produto', '').strip() # Remove espaços no começo e no fim da string
     if not produto:
         return jsonify({'erro': 'Campo "produto" e obrigatorio e nao pode ser vazio.'}), 400
     
-    #Verificação de campo obrigatório (quantidade)
+    # Verificação de campo obrigatório (quantidade)
     quantidade = dados.get('quantidade')
     if quantidade is None:
         return jsonify({'erro': 'Campo "quantidade" e obrigatorio.'}), 400
-    #Verifica se a quantidade é um número inteiro e positivo
+    # Verifica se a quantidade é um número inteiro e positivo
     try:
         quantidade = int(quantidade)
         if quantidade <=0:
@@ -109,36 +108,36 @@ def criar_ordem():
     except (ValueError, TypeError):
         return jsonify({'erro': 'Campo "quantidade" deve ser um numero inteiro positivo.'}), 400
     
-    #Status (*pendente, en amndamento, concluída) - opcional
-    status_validos = ['Pendente','Em andamento','Concluida'] #Lista de valores
+    # Status (pendente, en amndamento, concluída) - opcional
+    status_validos = ['Pendente','Em andamento','Concluida'] # Lista de valores
     status = dados.get('status', 'Pendente')
     if status not in status_validos:
         return jsonify({'erro': f'Status invalido. Use {status_validos}'}), 400
     
-    #Inserção dos dados no banco
+    # Inserção dos dados no banco
     conn = get_connection()
     cursor = conn.cursor()
-    #Com o cursor.execute sempre vem o comando SQL
+    # Com o cursor.execute sempre vem o comando SQL
     cursor.execute(
         'INSERT INTO ordens (produto, quantidade, status) VALUES (?, ?, ?)',
         (produto, quantidade, status)
     )
     conn.commit()
 
-    #Recuperando o ID que é gerado automaticamente pelo banco
+    # Recuperando o ID que é gerado automaticamente pelo banco
     novo_id = cursor.lastrowid
     conn.close()
 
-    #Buscar o registro que foi recém-criado
+    # Buscar o registro que foi recém-criado
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM ordens WHERE id = ?', (novo_id,))
-    nova_ordem = cursor.fetchone() #Lê o máximo de resultados possíveis
+    nova_ordem = cursor.fetchone() # Lê o máximo de resultados possíveis
     conn.close()
 
-    return jsonify(dict(nova_ordem)), 201 #201 retorna "created" com o registro completo
+    return jsonify(dict(nova_ordem)), 201 # 201 retorna "created" com o registro completo
 
-#ROTA N5 - ATUALIZAR O STATUS DE UMA ORDEM (PUT)
+# ROTA N5 - ATUALIZAR O STATUS DE UMA ORDEM (PUT)
 @app.route('/ordens/<int:ordem_id>', methods=['PUT'])
 def atualizar_ordem(ordem_id):
     '''
@@ -157,7 +156,7 @@ def atualizar_ordem(ordem_id):
     if not dados:
         return jsonify({'erro': 'Body da requisicao ausente ou invalido'}), 400
     
-    #Valida o campo status
+    # Valida o campo status
     status_validos = ['Pendente', 'Em andamento', 'Concluida']
     novo_status = dados.get('status', '').strip()
 
@@ -166,22 +165,22 @@ def atualizar_ordem(ordem_id):
     
     if not novo_status in status_validos:
         return jsonify({'erro': f'Status invalido! Escolha entre {status_validos}'}), 400
-    
+        
     conn = get_connection()
     cursor = conn.cursor()
-
-    #Verifica se a ordem consultada existe antes de atualizar
+ 
+    # Verifica se a ordem consultada existe antes de atualizar
     cursor.execute('SELECT id FROM ordens WHERE id = ?', (ordem_id,))
     if cursor.fetchone() is None:
         conn.close()
         return jsonify({'erro': f'Ordem {ordem_id} nao encontrada.'}), 404
     
-    #Atualiza o status
+    # Atualiza o status
     cursor.execute('UPDATE ordens SET status = ? WHERE id = ?', (novo_status, ordem_id,))
     conn.commit()
     conn.close()
 
-    #Retorna o registro atualizado
+    # Retorna o registro atualizado
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM ordens WHERE id = ?', (ordem_id,))
@@ -190,9 +189,40 @@ def atualizar_ordem(ordem_id):
 
     return jsonify(dict(ordem_atualizada)), 200
 
-#ROTA N6 - EXCLUIR UMA ORDEM (DELETE)
+# ROTA N6 - REMOVER UMA ORDEM (DELETE)
+@app.route('/ordens/<int:ordem_id>', methods=['DELETE'])
+def remover_ordem(ordem_id):
+    '''
+    Remove permanentemente uma ordem de produção pelo ID.
+    Parâmetros de URL:
+        ordem_id (int): ID da ordem a ser removida.
+    Retorna:
+    200 + mensagem de confirmação.
+    404 + erro se a ordem não for encontrada.
+    '''
+    conn = get_connection()
+    cursor = conn.cursor()
 
-#PONTO DE PARTIDA
+    # Verifica se a ordem existe
+    cursor.execute('SELECT id, produto FROM ordens WHERE id = ?', (ordem_id,))
+    ordem = cursor.fetchone()
+
+    if ordem is None:
+        conn.close()
+        return jsonify({'erro': f'Ordem {ordem_id} nao encontrada'}), 404
+    
+    # Guarda o nome do produto
+    nome_produto = ordem['produto']
+    
+    # Executa a remoção permanente da ordem
+    cursor.execute('DELETE FROM ordens WHERE id = ?', (ordem_id,))
+    #cursor.execute("DELETE FROM sqlite_sequence WHERE name='ordens'") # "Reseta" a contagem do ID
+    conn.commit()
+    conn.close()
+
+    return jsonify({'mensagem': f'Ordem {ordem_id} ({nome_produto}) removida com sucesso.', 'id_removido': ordem_id}), 200
+
+# PONTO DE PARTIDA
 if __name__=='__main__':
     init_bd()
     app.run(debug=True, host='0.0.0.0', port=5000)
