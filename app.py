@@ -40,7 +40,7 @@ def listar_ordens():
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM ordens ORDER BY id DESC')
-    ordens = cursor.fetchall()
+    ordens = cursor.fetchall() #Pega todos os resultados
     conn.close()
     #Converte cada Row do SQLite em dicionário Python para serializar em JSON
     return jsonify([dict(o) for o in ordens])
@@ -71,7 +71,7 @@ def buscar_ordem(ordem_id):
         return jsonify({'erro': f'Ordem {ordem_id} nao encontrada!'}), 404 #Código de erro
     return jsonify(dict(ordem)), 200 #Código de sucesso
 
-#ROTA - CRIAR NOVA ORDEM DE PRODUÇÃO (POST)
+#ROTA N4 - CRIAR NOVA ORDEM DE PRODUÇÃO (POST)
 @app.route('/ordens', methods=['POST'])
 def criar_ordem():
     '''
@@ -93,7 +93,7 @@ def criar_ordem():
         #400 é para dados inválidos
     
     #Verificação de campo obrigatório (produto)
-    produto = dados.get('produto', '').strip()
+    produto = dados.get('produto', '').strip() #Remove espaços no começo e no fim da string
     if not produto:
         return jsonify({'erro': 'Campo "produto" e obrigatorio e nao pode ser vazio.'}), 400
     
@@ -138,21 +138,59 @@ def criar_ordem():
 
     return jsonify(dict(nova_ordem)), 201 #201 retorna "created" com o registro completo
 
-#ROTA - ATUALIZAR STATUS DE UMA ORDEM (PUT)
+#ROTA N5 - ATUALIZAR O STATUS DE UMA ORDEM (PUT)
 @app.route('/ordens/<int:ordem_id>', methods=['PUT'])
-def atualizar_ordem():
+def atualizar_ordem(ordem_id):
     '''
     Atualiza o status de uma ordem de produção existente.
     Parâmetros de URL:
         ordem_id (int): ID da ordem a atualizar.
-        Body esperado (JSON):
+    Body esperado (JSON):
             status (str): Novo status. Valores aceitos: 'Pendente', 'Em andamento', 'Concluida'.
     Retorna:
-        200 + JSON da ordem atualizada.
-        400 + erro se status invalido.
-        404 + erro se ordem nao encontrada.
+        200 : JSON da ordem atualizada;
+        400 : erro se status invalido;
+        404 : erro se ordem nao encontrada.
     '''
-## ----------------------------------- PAREI AQUI -------------------------------------------
+    dados = request.get_json()
+
+    if not dados:
+        return jsonify({'erro': 'Body da requisicao ausente ou invalido'}), 400
+    
+    #Valida o campo status
+    status_validos = ['Pendente', 'Em andamento', 'Concluida']
+    novo_status = dados.get('status', '').strip()
+
+    if not novo_status:
+        return jsonify({'erro': 'o campo "status" e obrigatorio'}), 400
+    
+    if not novo_status in status_validos:
+        return jsonify({'erro': f'Status invalido! Escolha entre {status_validos}'}), 400
+    
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    #Verifica se a ordem consultada existe antes de atualizar
+    cursor.execute('SELECT id FROM ordens WHERE id = ?', (ordem_id,))
+    if cursor.fetchone() is None:
+        conn.close()
+        return jsonify({'erro': f'Ordem {ordem_id} nao encontrada.'}), 404
+    
+    #Atualiza o status
+    cursor.execute('UPDATE ordens SET status = ? WHERE id = ?', (novo_status, ordem_id,))
+    conn.commit()
+    conn.close()
+
+    #Retorna o registro atualizado
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM ordens WHERE id = ?', (ordem_id,))
+    ordem_atualizada = cursor.fetchone()
+    conn.close()
+
+    return jsonify(dict(ordem_atualizada)), 200
+
+#ROTA N6 - EXCLUIR UMA ORDEM (DELETE)
 
 #PONTO DE PARTIDA
 if __name__=='__main__':
