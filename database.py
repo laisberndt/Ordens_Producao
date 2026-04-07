@@ -1,8 +1,14 @@
-#CRIAÇÃO E CONFIGURAÇÃO DO BANCO DE DADOS SQLITE
+# -----------------------------------------------------------------------------------
+# database.bd - SISTEMA DE ORDENS DE PRODUÇÃO - BANCO DE DADOS
+# SENAI - JARAGUÁ DO SUL, SC - TÉCNICO EM CIBERSISTEMAS PARA AUTOMAÇÃO - 2026/1
+# CRIAÇÃO E CONFIGURAÇÃO DO BANCO DE DADOS SQLITE
+# -----------------------------------------------------------------------------------
+
+# Import
 import sqlite3
 
-#Constante com o nome do arquivo de banco de dados
-#O arquivo será criado durante a primeira execução
+# Constante com o nome do arquivo de banco de dados
+# O arquivo será criado durante a primeira execução
 bd_ordem = 'ordens.bd'
 
 def  get_connection():
@@ -27,10 +33,10 @@ def init_bd():
     '''
     conn = get_connection()
     
-    #Cursor() permite executar comandos SQL
+    # Cursor() permite executar comandos SQL
     cursor = conn.cursor()
     
-    #IF NOT EXISTS garante que o comando não falhe se a tabela já existir
+    # IF NOT EXISTS garante que o comando não falhe se a tabela já existir
     cursor.execute('''
                    CREATE TABLE IF NOT EXISTS ordens(
                        id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,10 +47,10 @@ def init_bd():
                        )
                        ''')
 
-    #commit() salva as alterações no arquivo .bd
+    # commit() salva as alterações no arquivo .bd
     conn.commit()
     
-    #close() libera a conexão (boa prática)
+    # close() libera a conexão (boa prática)
     conn.close()
     
     print("Banco de dados inicializado com sucesso!")

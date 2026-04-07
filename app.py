@@ -1,8 +1,14 @@
+# -----------------------------------------------------------------------------------
+# app.py - SISTEMA DE ORDENS DE PRODUÇÃO - CRUD COMPLETO
+# SENAI - JARAGUÁ DO SUL, SC - TÉCNICO EM CIBERSISTEMAS PARA AUTOMAÇÃO - 2026/1
 # BACK-END FLASK: ROTAS DA API REST
+# -----------------------------------------------------------------------------------
 
+# Imports
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from database import init_bd, get_connection
+import datetime
 
 # Criando uma instância da aplicação Flash
 app = Flask(__name__, static_folder='static', static_url_path='')
@@ -21,15 +27,27 @@ def index():
 def status():
     '''Rota de verificação da API (Saúde)
     Retorna um JSON infornando que o servidor está ativo'''
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT COUNT(*) as total FROM ordens')
+    resultado = cursor.fetchone()
+    conn.close()
+
     return jsonify({
         "status": "online",
-        "sistema": "Sistema de Ordem de Producao",
-        "versão": "1.0.0",
+        "sistema": "Sistema de Ordens de Producao",
+        "versao": "2.0.0",
+        "total_ordens": resultado["total"],
+        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "mensagem": "Ola Fabrica! API funcionando!"
     })
 
 # ROTA N3 - LISTAR TODAS AS ORDENS (GET)
+
+# Define uma rota da API no caminho /ordens/<ordem_id>
 @app.route('/ordens', methods=['GET'])
+# Função que será chamada quando a rota for acessada
 def listar_ordens():
     '''
     Listar todas as ordens de produção cadastradas.
@@ -42,12 +60,12 @@ def listar_ordens():
     cursor.execute('SELECT * FROM ordens ORDER BY id DESC')
     ordens = cursor.fetchall() # Pega todos os resultados
     conn.close()
+
     # Converte cada Row do SQLite em dicionário Python para serializar em JSON
     return jsonify([dict(o) for o in ordens])
 
 # ROTA POR ID - BUSCAR UMA ORDEM ESPECÍFICA PELO ID
 @app.route('/ordens/<int:ordem_id>', methods=['GET'])
-
 def buscar_ordem(ordem_id):
     '''
     Buscar uma única ordem de produção pelo ID.
@@ -111,6 +129,7 @@ def criar_ordem():
     # Status (pendente, en amndamento, concluída) - opcional
     status_validos = ['Pendente','Em andamento','Concluida'] # Lista de valores
     status = dados.get('status', 'Pendente')
+    
     if status not in status_validos:
         return jsonify({'erro': f'Status invalido. Use {status_validos}'}), 400
     
@@ -118,10 +137,8 @@ def criar_ordem():
     conn = get_connection()
     cursor = conn.cursor()
     # Com o cursor.execute sempre vem o comando SQL
-    cursor.execute(
-        'INSERT INTO ordens (produto, quantidade, status) VALUES (?, ?, ?)',
-        (produto, quantidade, status)
-    )
+    cursor.execute('INSERT INTO ordens (produto, quantidade, status) VALUES (?, ?, ?)',
+        (produto, quantidade, status))
     conn.commit()
 
     # Recuperando o ID que é gerado automaticamente pelo banco
