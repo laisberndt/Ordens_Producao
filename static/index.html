@@ -1,26 +1,84 @@
-<!------------------------------------------------------------------------------------->
-<!-- index.html - SISTEMA DE ORDENS DE PRODUÇÃO -->
-<!-- SENAI - JARAGUÁ DO SUL, SC - TÉCNICO EM CIBERSISTEMAS PARA AUTOMAÇÃO - 2026/1 -->
-<!-- FRONT-END -->
-<!------------------------------------------------------------------------------------->
-
-<!--Indica que versão utilizada será a mais recente-->
 <!DOCTYPE html>
-<html lang="pt-BR"> <!-- Define o idioma do site -->
-<head> <!-- Aqui é a cabeça, onde o código começa -->
-    <meta charset="UTF-8"> <!-- Padrão que permite o uso de acentos de maneira correta -->
-    <!-- Ajusta a janela do site para o tamanho do dispositivo -->
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Título que aparece na aba do navegador -->
     <title>Sistema de Ordens de Producao</title>
-    <!-- Os estilos CSS virão aqui na Seção 4 -->
-</head> <!-- Acaba a parte inicial -->
-<body> <!-- Aqui começa o corpo do código -->
+    </head>
+<body>
 
-    <!-- CABEÇALHO -->
     <header>
         <div class="header-content">
-            <h1>Sistema de Ordens de Producao</h1>
+            <h1>Sistema de Ordens de Produção</h1>
             <span id="status-badge">Verificando...</span>
         </div>
     </header>
+
+    <main>
+
+        <section class="card" id="secao-cadastro">
+            <h2>Nova Ordem de Produção</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="produto">Produto</label>
+                    <input type="text" id="produto" 
+                           placeholder="Ex: Motor Eletrico WEG W22">
+                </div>
+
+                <div class="form-group">
+                    <label for="quantidade">Quantidade</label>
+                    <input type="number" id="quantidade" 
+                           placeholder="Ex: 100" min="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="status-novo">Status Inicial</label>
+                    <select id="status-novo">
+                        <option value="Pendente">Pendente</option>
+                        <option value="Em andamento">Em andamento</option>
+                        <option value="Concluida">Concluida</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="btn-cadastrar" onclick="criarOrdem()">
+                Cadastrar Ordem
+            </button>
+
+            <div id="mensagem" class="mensagem oculto"></div>
+        </section>
+
+        <section class="card" id="secao-listagem">
+            <div class="listagem-header">
+                <h2>Ordens Cadastradas</h2>
+                <button onclick="carregarOrdens()" class="btn-atualizar">
+                    Atualizar Lista
+                </button>
+            </div>
+
+            <div id="loading" class="oculto">Carregando...</div>
+
+            <div class="tabela-container">
+                <table id="tabela-ordens">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Produto</th>
+                            <th>Qtd</th>
+                            <th>Status</th>
+                            <th>Criado em</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpo-tabela">
+                        </tbody>
+                </table>
+            </div>
+            
+            <p id="sem-dados" class="oculto">Nenhuma ordem cadastrada.</p>
+        </section>
+
+    </main>
+
+    </body>
+</html>
