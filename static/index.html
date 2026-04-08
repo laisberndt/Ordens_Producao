@@ -4,25 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Ordens de Producao</title>
+    <link rel="stylesheet" href="style.css">
     </head>
 <body>
 
     <header>
-        <div class="header-content">
-            <h1>Sistema de Ordens de Produção</h1>
-            <span id="status-badge">Verificando...</span>
+        <div class="header-content"> <!-- funciona como um contêiner -->
+            <h1>Sistema de Ordens de Produção</h1> <!-- título em tamanho 16 -->
+            <span id="status-badge">Verificando...</span> <!-- subtítulo -->
         </div>
     </header>
 
     <main>
 
-        <section class="card" id="secao-cadastro">
+        <section class="card" id="secao-cadastro"> <!-- conjunto de divs -->
             <h2>Nova Ordem de Produção</h2>
             <div class="form-grid">
                 <div class="form-group">
                     <label for="produto">Produto</label>
                     <input type="text" id="produto" 
-                           placeholder="Ex: Motor Eletrico WEG W22">
+                           placeholder="Ex: Motor Eletrico WEG W22"> <!-- Indica que vai receber algo -->
                 </div>
 
                 <div class="form-group">
@@ -79,6 +80,6 @@
         </section>
 
     </main>
-
+    <script src="script.js"></script>
     </body>
 </html>

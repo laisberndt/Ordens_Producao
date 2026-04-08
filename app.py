@@ -233,11 +233,65 @@ def remover_ordem(ordem_id):
     
     # Executa a remoção permanente da ordem
     cursor.execute('DELETE FROM ordens WHERE id = ?', (ordem_id,))
-    #cursor.execute("DELETE FROM sqlite_sequence WHERE name='ordens'") # "Reseta" a contagem do ID
     conn.commit()
     conn.close()
 
     return jsonify({'mensagem': f'Ordem {ordem_id} ({nome_produto}) removida com sucesso.', 'id_removido': ordem_id}), 200
+
+# ROTA N7 - ATUALIZAR O PRODUTO E QUANTIDADE DE UMA ORDEM (PUT)
+@app.route('/ordens/<int:ordem_id>/edit', methods=['PUT'])
+def editar_ordem(ordem_id):
+    '''
+    Atualiza o nome e quantidade de uma ordem de produção existente.
+    Parâmetros de URL:
+        ordem_id (int): ID da ordem a atualizar.
+    '''
+    dados = request.get_json()
+
+    if not dados:
+        return jsonify({'erro': 'Body da requisicao ausente ou invalido'}), 400
+    
+    # Valida o campo produto
+    novo_produto = dados.get('produto', '').strip()
+    if not novo_produto:
+        return jsonify({'erro': 'o campo "produto" e obrigatorio'}), 400
+
+    # Valida o campo quantidade 
+    nova_qtd = dados.get('quantidade')
+    if nova_qtd is None:
+        return jsonify({'erro': 'Campo "quantidade" e obrigatorio.'}), 400
+    # Verifica se a quantidade é um número inteiro e positivo
+    try:
+        nova_qtd = int(nova_qtd)
+        if nova_qtd <=0:
+            raise ValueError()
+    except (ValueError, TypeError):
+        return jsonify({'erro': 'Campo "quantidade" deve ser um numero inteiro positivo.'}), 400
+    
+    conn = get_connection()
+    cursor = conn.cursor()
+ 
+    # Verifica se a ordem consultada existe antes de atualizar
+    cursor.execute('SELECT id FROM ordens WHERE id = ?', (ordem_id,))
+    if cursor.fetchone() is None:
+        conn.close()
+        return jsonify({'erro': f'Ordem {ordem_id} nao encontrada.'}), 404
+    
+    # Atualiza o produto e a quantidade
+    cursor.execute('UPDATE ordens SET produto = ? WHERE id = ?', (novo_produto, ordem_id,))
+    cursor.execute('UPDATE ordens SET quantidade = ? WHERE id = ?', (nova_qtd, ordem_id,))
+
+    conn.commit()
+    conn.close()
+
+    # Retorna o registro atualizado
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM ordens WHERE id = ?', (ordem_id,))
+    ordem_atualizada = cursor.fetchone()
+    conn.close()
+
+    return jsonify(dict(ordem_atualizada)), 200
 
 # PONTO DE PARTIDA
 if __name__=='__main__':
