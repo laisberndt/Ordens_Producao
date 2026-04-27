@@ -31,7 +31,7 @@ async function carregarOrdens() {
     semDados.classList.add('oculto');
 
     try {
-        const resposta = await fetch(`${API_URL}/ordens`);
+        const resposta = await fetch(`${API_URL}/ordens`); //fetch é usada pra buscar dados de uma API (tipo um “pedido” pra um servidor).
         const ordens = await resposta.json();
 
         loading.classList.add('oculto');
@@ -76,7 +76,7 @@ async function carregarOrdens() {
    ———————————————————————————————————————————————————————————————— */
 async function criarOrdem() {
     // Captura os valores dos campos HTML
-    const produto = document.getElementById('produto').value.trim();
+    const produto = document.getElementById('produto').value.trim(); // Trim remove os espaços no início e fim
     const quantidade = document.getElementById('quantidade').value;
     const status = document.getElementById('status-novo').value;
 

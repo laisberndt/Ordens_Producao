@@ -5,7 +5,7 @@
 # -----------------------------------------------------------------------------------
 
 # Imports
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request # Micro-framework, projetado pra cirar aplicações web
 from flask_cors import CORS
 from database import init_bd, get_connection
 import datetime
@@ -28,10 +28,10 @@ def status():
     '''Rota de verificação da API (Saúde)
     Retorna um JSON infornando que o servidor está ativo'''
 
-    conn = get_connection()
-    cursor = conn.cursor()
+    conn = get_connection() # Estabelece comunicação com um banco de dados
+    cursor = conn.cursor() # Funciona como um intermediário que permite enviar comandos SQL, gerenciar transações e buscar os resultados das consultas
     cursor.execute('SELECT COUNT(*) as total FROM ordens')
-    resultado = cursor.fetchone()
+    resultado = cursor.fetchone() # Retorna um único registro ou None
     conn.close()
 
     return jsonify({
@@ -44,7 +44,6 @@ def status():
     })
 
 # ROTA N3 - LISTAR TODAS AS ORDENS (GET)
-
 # Define uma rota da API no caminho /ordens/<ordem_id>
 @app.route('/ordens', methods=['GET'])
 # Função que será chamada quando a rota for acessada
@@ -82,8 +81,8 @@ def buscar_ordem(ordem_id):
     
     # O '?' é substituído pelo valor de ordem_id de forma segura
     cursor.execute('SELECT * FROM ordens WHERE id = ?', (ordem_id,))
-    ordem = cursor.fetchone() # Retorna um único registro ou None
-    conn.close()
+    ordem = cursor.fetchone() 
+    conn.close() #Fecha conexão
     
     if ordem is None:
         return jsonify({'erro': f'Ordem {ordem_id} nao encontrada!'}), 404 # Código de erro
@@ -104,7 +103,7 @@ def criar_ordem():
         201 : JSON da ordem criada, em caso de sucesso.
         404 : Mensagem de erro, se dados inválidos.
     '''
-    dados = request.get_json()
+    dados = request.get_json() # quando vem JSON (API moderna)
     
     if not dados:
         return jsonify({'erro:': 'Body da requesicao ausente ou invalido.'}), 400 # Para dados inválidos
